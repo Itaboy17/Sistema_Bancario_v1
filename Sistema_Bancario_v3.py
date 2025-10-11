@@ -9,7 +9,7 @@ class Cliente:
         self.contas = []
 
     # Função realizar_transacao(self, conta, transacao)
-    def realizar_transacao(self, conta, transacao):
+    def realizar_transacao(self, conta, transacao):      
         # Registra usando as instâncias da classe Transação dentro da conta do cliente
         transacao.registrar(conta)
 
@@ -130,10 +130,16 @@ class Historico:  # Classe que armazenará as transações realizadas pelo usuá
     def __init__(self):
         # Dicionário de transações, que armazena o tipo e o valor de cada transação (saque/depósito e valor)
         self._transacoes = []
+        self._limite_transacoes_dia = 10
+        self._transacoes_dia = 0
 
     @property
     def transacoes(self):
         return self._transacoes
+    
+    @property
+    def transacoes_dia(self):
+        return self._transacoes_dia
 
     def adicionar_transacao(self, transacao):
         # Adiciona cada transação ao histórico
@@ -143,9 +149,11 @@ class Historico:  # Classe que armazenará as transações realizadas pelo usuá
                 "tipo": transacao.__class__.__name__,
                 # Usado para acessar o valor da transação instanciado nas classes Deposito ou Saque
                 "valor": transacao.valor,
+                # Usado para acessar a data e o horário da transação
+                "data": datetime.now().strftime("%d-%m-%Y %H:%M:%S")
             }
         )
-
+        
 
 class Transacao(ABC):
     @property  # Indica para as classes filhas que essa instância de classe é uma propriedade da classe pai
@@ -253,7 +261,7 @@ def exibir_extrato(clientes):
 
         else:
             for transacao in transacoes:
-                extrato += f"\n{transacao['tipo']}: R${transacao['valor']:.2f}"
+                extrato += f"\n-->{transacao['tipo']}: R${transacao['valor']:.2f} às {transacao['data']}"
 
         print(extrato)
         print(f"Saldo: {conta.saldo:.2f}\n")
@@ -353,32 +361,32 @@ def main():
     # Estrutura Principal do Sistema
     while True:
         option = menu()
+        match option:
+            case "nc":# Novo Cliente
+                novo_cliente(clientes)
 
-        if option == "nc":  # Novo Cliente
-            novo_cliente(clientes)
+            case "cc":  # Criar Conta
+                numero_conta = len(contas) + 1
+                criar_conta(numero_conta, clientes)
 
-        elif option == "cc":  # Criar Conta
-            numero_conta = len(contas) + 1
-            criar_conta(numero_conta, clientes)
+            case "lc":  # Listar Contas
+                listar_contas(contas)
 
-        elif option == "lc":  # Listar Contas
-            listar_contas(contas)
+            case "d":  # Depositar
+                depositar(clientes)
 
-        elif option == "d":  # Depositar
-            depositar(clientes)
+            case "s":  # Sacar
+                sacar(clientes)
 
-        elif option == "s":  # Sacar
-            sacar(clientes)
+            case "e":  # Extrato
+                exibir_extrato(clientes)
 
-        elif option == "e":  # Extrato
-            exibir_extrato(clientes)
+            case "q":  # QUIT
+                print(MENSAGEM)
+                break
 
-        elif option == "q":  # QUIT
-            print(MENSAGEM)
-            break
-
-        else:
-            print("Operação inválida, por favor selecione novamente a opção desejada")
+            case _:
+                print("Operação inválida, por favor selecione novamente a opção desejada")
 
 
 # Código Rodando
